@@ -1,0 +1,29 @@
+// Top-level build.gradle file
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:7.0.0' // Use compatible Gradle plugin version
+        classpath 'com.google.gms:google-services:4.3.15' // Updated Google services plugin
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+        // jcenter() // Uncomment only if needed, but it's deprecated
+    }
+}
+
+rootProject.buildDir = "../build"
+
+subprojects {
+    project.buildDir = "${rootProject.buildDir}/${project.name}"
+}
+
+tasks.register("clean", Delete) {
+    delete rootProject.buildDir
+}

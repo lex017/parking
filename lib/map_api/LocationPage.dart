@@ -15,10 +15,8 @@ class _LocationPageState extends State<LocationPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[900],
       body: Column(
         children: [
-          // Header Section
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Text(
@@ -26,12 +24,10 @@ class _LocationPageState extends State<LocationPage> {
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: Colors.black,
               ),
             ),
           ),
-
-          // Fetch and Display Location Data
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
               stream: _firestore.collection('Locations').snapshots(),
@@ -83,7 +79,6 @@ class _LocationPageState extends State<LocationPage> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              // Details Section
                               Padding(
                                 padding: const EdgeInsets.all(16.0),
                                 child: Row(
@@ -140,7 +135,7 @@ class _LocationPageState extends State<LocationPage> {
   }
 }
 
-// New Page to Show Location Details
+
 class LocationDetailsPage extends StatelessWidget {
   final Map<String, dynamic> location;
 

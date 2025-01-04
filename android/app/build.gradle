@@ -27,13 +27,20 @@ android {
         versionName flutter.versionName
     }
 
-    buildTypes {
-        release {
-            signingConfig signingConfigs.debug // Replace with release signingConfig when ready
-            minifyEnabled false               // Disable minification for debugging
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-        }
+   buildTypes {
+    release {
+        // เปิดการลดขนาดโค้ดและทรัพยากร
+        minifyEnabled true
+        shrinkResources true
+        proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
     }
+    debug {
+        // สำหรับ debug ไม่จำเป็นต้องลดขนาดโค้ด
+        minifyEnabled false
+        shrinkResources false
+    }
+}
+
 }
 
 flutter {

@@ -105,6 +105,22 @@ class _BillPageState extends State<BillPage> {
                     foregroundColor: Colors.white,
                   ),
                 ),
+                ElevatedButton.icon(
+                  onPressed: () {
+                    // Add share logic here
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text("Location..."),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.gps_fixed),
+                  label: const Text("GPS"),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    foregroundColor: Colors.white,
+                  ),
+                ),
               ],
             ),
           ],

@@ -5,7 +5,7 @@ import 'package:parking/map_api/LocationPage.dart';
 import 'package:parking/menu/Help.dart';
 import 'package:parking/menu/Wallet.dart';
 import 'package:parking/menu/history.dart';
-import 'package:parking/model/ImageInputScreen.dart';
+
 
 class mainPage extends StatefulWidget {
   const mainPage({super.key});

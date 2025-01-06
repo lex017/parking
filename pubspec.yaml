@@ -61,6 +61,8 @@ dependencies:
   cloudinary_url_gen: ^1.6.0
   flutter_gif: ^0.0.4
   animate_do: ^3.3.4
+  mobile_scanner: ^6.0.2
+  qr_flutter: ^4.1.0
 
 
 flutter_native_splash:

@@ -7,6 +7,7 @@ import 'package:parking/homepage.dart';
 import 'package:parking/map_api/LocationPage.dart';
 import 'package:parking/menu/Help.dart';
 import 'package:parking/menu/Wallet.dart';
+import 'package:parking/menu/employeescan.dart';
 
 import 'package:parking/menu/history.dart';
 
@@ -173,6 +174,25 @@ class _drawer_menuState extends State<drawer_menu> {
                 Navigator.of(context).pop();
                 MaterialPageRoute route =
                     MaterialPageRoute(builder: (c) => Wallet());
+                Navigator.of(context).push(route);
+              },
+            ),
+          ),
+          TextButton(
+            onPressed: () {},
+            child: ListTile(
+              title: Text(
+                'EmployeeScan',
+                style: TextStyle(
+                    fontSize: 22.0,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                    fontFamily: 'Roboto'),
+              ),
+              onTap: () {
+                Navigator.of(context).pop();
+                MaterialPageRoute route =
+                    MaterialPageRoute(builder: (c) => EmployeeScan());
                 Navigator.of(context).push(route);
               },
             ),

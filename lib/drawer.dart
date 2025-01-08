@@ -2,6 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:parking/chose/Owner.dart';
+import 'package:parking/constant/CloudinaryUploader.dart';
+import 'package:parking/constant/getImageClound.dart';
 import 'package:parking/data_save/position.dart';
 import 'package:parking/homepage.dart';
 import 'package:parking/map_api/LocationPage.dart';
@@ -247,6 +249,44 @@ class _drawer_menuState extends State<drawer_menu> {
                 Navigator.of(context).pop();
                 MaterialPageRoute route =
                     MaterialPageRoute(builder: (c) => Help());
+                Navigator.of(context).push(route);
+              },
+            ),
+          ),
+          TextButton(
+            onPressed: () {},
+            child: ListTile(
+              title: Text(
+                'upload',
+                style: TextStyle(
+                    fontSize: 22.0,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                    fontFamily: 'Roboto'),
+              ),
+              onTap: () {
+                Navigator.of(context).pop();
+                MaterialPageRoute route =
+                    MaterialPageRoute(builder: (c) => CloudinaryUploader());
+                Navigator.of(context).push(route);
+              },
+            ),
+          ),
+           TextButton(
+            onPressed: () {},
+            child: ListTile(
+              title: Text(
+                'showimage',
+                style: TextStyle(
+                    fontSize: 22.0,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                    fontFamily: 'Roboto'),
+              ),
+              onTap: () {
+                Navigator.of(context).pop();
+                MaterialPageRoute route =
+                    MaterialPageRoute(builder: (c) => GetImage());
                 Navigator.of(context).push(route);
               },
             ),

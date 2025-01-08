@@ -1,5 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:parking/cash/payPage.dart';
+import 'package:parking/cash/receip.dart';
 
 class btnLocation extends StatefulWidget {
   const btnLocation({super.key});
@@ -9,29 +10,42 @@ class btnLocation extends StatefulWidget {
 }
 
 class _BtnLocationState extends State<btnLocation> {
+  int? selectedHours;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text("Location Details"),
+        backgroundColor: Colors.blue.shade700,
+        elevation: 0,
+      ),
       body: Column(
         children: [
-          // Top Section (Placeholder for Map or Icon)
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                width: 220,
-                height: 220,
-                margin: const EdgeInsets.only(top: 40),
-                decoration: BoxDecoration(
-                  color: Colors.red.shade100,
-                  borderRadius: BorderRadius.circular(20),
-                ),
+          // Top Section (Placeholder for Map or Image)
+          Container(
+            width: double.infinity,
+            height: 250,
+            margin: const EdgeInsets.only(top: 10),
+            decoration: BoxDecoration(
+              borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(40),
+                bottomRight: Radius.circular(40),
               ),
-            ],
+              color: Colors.blue.shade100,
+            ),
+            child: Center(
+              child: Icon(
+                Icons.location_on,
+                size: 100,
+                color: Colors.blue.shade700,
+              ),
+            ),
           ),
 
-          const SizedBox(height: 80.0),
+          const SizedBox(height: 20.0),
 
+          // Bottom Section
           Expanded(
             child: Container(
               padding: const EdgeInsets.all(20),
@@ -42,71 +56,136 @@ class _BtnLocationState extends State<btnLocation> {
                   topLeft: Radius.circular(40),
                   topRight: Radius.circular(40),
                 ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black26,
+                    blurRadius: 10,
+                    offset: Offset(0, -4),
+                  ),
+                ],
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Title and Slot Info
+                  // Fetch and display one specific location
+                  StreamBuilder<DocumentSnapshot>(
+                    stream: FirebaseFirestore.instance
+                        .collection('Locations')
+                        .doc('location1') // Replace with the document ID you want
+                        .snapshots(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const CircularProgressIndicator();
+                      }
+                      if (snapshot.hasError) {
+                        return const Text(
+                          "Error loading data",
+                          style: TextStyle(color: Colors.red),
+                        );
+                      }
+                      if (!snapshot.hasData || !snapshot.data!.exists) {
+                        return const Text(
+                          "No data available",
+                          style: TextStyle(color: Colors.grey),
+                        );
+                      }
+
+                      final data = snapshot.data!.data() as Map<String, dynamic>;
+                      final nameLocation = data['nameLocation'] ?? 'Unknown Name';
+
+                      return Text(
+                        nameLocation,
+                        style: const TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      );
+                    },
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // Hour Selection Dropdown
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: const [
-                      Text(
-                        "Thanluang",
+                    children: [
+                      const Text(
+                        "Select Hours: ",
                         style: TextStyle(
-                          fontSize: 26,
+                          fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      Text(
-                        "Car - 0/2",
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.grey,
-                        ),
+                      const SizedBox(width: 10),
+                      DropdownButton<int>(
+                        value: selectedHours,
+                        hint: const Text("Choose"),
+                        items: const [
+                          DropdownMenuItem(
+                            value: 2,
+                            child: Text("2 Hours"),
+                          ),
+                          DropdownMenuItem(
+                            value: 4,
+                            child: Text("4 Hours"),
+                          ),
+                          DropdownMenuItem(
+                            value: 8,
+                            child: Text("8 Hours"),
+                          ),
+                        ],
+                        onChanged: (value) {
+                          setState(() {
+                            selectedHours = value;
+                          });
+                        },
                       ),
                     ],
-                  ),
-                  const SizedBox(height: 14),
-
-                  // Description
-                  const Text(
-                    "Contrary to popular belief, Lorem Ipsum is not simply random text. "
-                    "It has roots in a piece of classical Latin literature from 45 BC, "
-                    "making it over 2000 years old.",
-                    style: TextStyle(
-                      fontSize: 14,
-                      height: 1.5,
-                      color: Colors.grey,
-                    ),
                   ),
 
                   const Spacer(),
 
-                  // Bottom Row with Price and Button
+                  // Bottom Row with Button
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
-                        "25.000 KIP",
-                        style: TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                        ),
+                      // Price Display
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            "Price",
+                            style: TextStyle(fontSize: 16, color: Colors.grey),
+                          ),
+                          Text(
+                            "${selectedHours != null ? selectedHours! * 15000 : 0} LAK",
+                            style: const TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.blue,
+                            ),
+                          ),
+                        ],
                       ),
+
                       ElevatedButton.icon(
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                MaterialPageRoute route =MaterialPageRoute(builder: (c)=>PayPage());
-                Navigator.of(context).push(route);
-                        },
-                        icon: const Icon(Icons.arrow_circle_right),
-                        label: const Text("GO"),
+                        onPressed: selectedHours == null
+                            ? null
+                            : () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(builder: (c) => BillPage()),
+                                );
+                              },
+                        icon: const Icon(Icons.arrow_forward, color: Colors.white),
+                        label: const Text(
+                          "GO",
+                          style: TextStyle(fontSize: 18, color: Colors.white),
+                        ),
                         style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                          backgroundColor: Colors.blue,
-                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 24, vertical: 14),
+                          backgroundColor: selectedHours == null
+                              ? Colors.grey
+                              : Colors.blue.shade700,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(20),
                           ),

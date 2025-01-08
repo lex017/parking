@@ -1,16 +1,16 @@
+import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:parking/chose/Owner.dart';
 import 'package:parking/constant/CloudinaryUploader.dart';
 import 'package:parking/constant/getImageClound.dart';
-import 'package:parking/data_save/position.dart';
 import 'package:parking/homepage.dart';
 import 'package:parking/map_api/LocationPage.dart';
 import 'package:parking/menu/Help.dart';
 import 'package:parking/menu/Wallet.dart';
 import 'package:parking/menu/employeescan.dart';
-
 import 'package:parking/menu/history.dart';
 
 class drawer_menu extends StatefulWidget {
@@ -22,6 +22,27 @@ class drawer_menu extends StatefulWidget {
 
 class _drawer_menuState extends State<drawer_menu> {
   final auth = FirebaseAuth.instance;
+  final ImagePicker _picker = ImagePicker();
+  File? _profileImage;
+
+  Future<void> _pickProfileImage() async {
+  try {
+    final XFile? pickedFile =
+        await _picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      print("Image picked: ${pickedFile.path}");
+      setState(() {
+        _profileImage = File(pickedFile.path);
+      });
+    } else {
+      print("No image selected.");
+    }
+  } catch (e) {
+    print("Error picking profile image: $e");
+  }
+}
+
+
   @override
   Widget build(BuildContext context) {
     return Drawer(
@@ -32,9 +53,8 @@ class _drawer_menuState extends State<drawer_menu> {
             decoration: const BoxDecoration(),
             accountName: FutureBuilder<DocumentSnapshot>(
               future: FirebaseFirestore.instance
-                  .collection('users') 
-                  .doc(auth
-                      .currentUser?.uid)
+                  .collection('users')
+                  .doc(auth.currentUser?.uid)
                   .get(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
@@ -60,7 +80,7 @@ class _drawer_menuState extends State<drawer_menu> {
                   );
                 }
 
-                final data = snapshot.data!;
+                final data = snapshot.data!.data() as Map<String, dynamic>;
                 return Text(
                   data['username'] ?? 'No Name Found',
                   style: const TextStyle(
@@ -79,12 +99,24 @@ class _drawer_menuState extends State<drawer_menu> {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            currentAccountPicture: CircleAvatar(
-              backgroundColor: Colors.yellow,
-              child: ClipOval(
-                child: Image.asset(
-                  'images/logo.png',
-                  fit: BoxFit.cover,
+            currentAccountPicture: GestureDetector(
+              onTap: _pickProfileImage,
+              child: CircleAvatar(
+                backgroundColor: Colors.white,
+                child: ClipOval(
+                  child: _profileImage != null
+                      ? Image.file(
+                          _profileImage!,
+                          fit: BoxFit.cover,
+                          width: 90,
+                          height: 90,
+                        )
+                      : Image.asset(
+                          'images/logo.png',
+                          fit: BoxFit.cover,
+                          width: 90,
+                          height: 90,
+                        ),
                 ),
               ),
             ),
@@ -95,10 +127,11 @@ class _drawer_menuState extends State<drawer_menu> {
               title: Text(
                 'Home',
                 style: TextStyle(
-                    fontSize: 22.0,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                    fontFamily: 'Roboto'),
+                  fontSize: 22.0,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                  fontFamily: 'Roboto',
+                ),
               ),
               onTap: () {
                 Navigator.of(context).pop();
@@ -114,14 +147,16 @@ class _drawer_menuState extends State<drawer_menu> {
               title: Text(
                 'Location',
                 style: TextStyle(
-                    fontSize: 22.0,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                    fontFamily: 'Roboto'),
+                  fontSize: 22.0,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                  fontFamily: 'Roboto',
+                ),
               ),
               onTap: () {
                 Navigator.of(context).pop();
-                MaterialPageRoute route =MaterialPageRoute(builder: (c)=>LocationPage());
+                MaterialPageRoute route =
+                    MaterialPageRoute(builder: (c) => LocationPage());
                 Navigator.of(context).push(route);
               },
             ),
@@ -132,10 +167,11 @@ class _drawer_menuState extends State<drawer_menu> {
               title: Text(
                 'History',
                 style: TextStyle(
-                    fontSize: 22.0,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                    fontFamily: 'Roboto'),
+                  fontSize: 22.0,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                  fontFamily: 'Roboto',
+                ),
               ),
               onTap: () {
                 Navigator.of(context).pop();
@@ -151,10 +187,11 @@ class _drawer_menuState extends State<drawer_menu> {
               title: Text(
                 'My Ticket',
                 style: TextStyle(
-                    fontSize: 22.0,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                    fontFamily: 'Roboto'),
+                  fontSize: 22.0,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                  fontFamily: 'Roboto',
+                ),
               ),
               onTap: () {
                 Navigator.of(context).pop();
@@ -167,10 +204,11 @@ class _drawer_menuState extends State<drawer_menu> {
               title: Text(
                 'Wallet',
                 style: TextStyle(
-                    fontSize: 22.0,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                    fontFamily: 'Roboto'),
+                  fontSize: 22.0,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                  fontFamily: 'Roboto',
+                ),
               ),
               onTap: () {
                 Navigator.of(context).pop();
@@ -186,10 +224,11 @@ class _drawer_menuState extends State<drawer_menu> {
               title: Text(
                 'EmployeeScan',
                 style: TextStyle(
-                    fontSize: 22.0,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                    fontFamily: 'Roboto'),
+                  fontSize: 22.0,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                  fontFamily: 'Roboto',
+                ),
               ),
               onTap: () {
                 Navigator.of(context).pop();
@@ -205,10 +244,11 @@ class _drawer_menuState extends State<drawer_menu> {
               title: Text(
                 'Setting',
                 style: TextStyle(
-                    fontSize: 22.0,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                    fontFamily: 'Roboto'),
+                  fontSize: 22.0,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                  fontFamily: 'Roboto',
+                ),
               ),
               onTap: () {
                 Navigator.of(context).pop();
@@ -221,10 +261,11 @@ class _drawer_menuState extends State<drawer_menu> {
               title: Text(
                 'Owner',
                 style: TextStyle(
-                    fontSize: 22.0,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                    fontFamily: 'Roboto'),
+                  fontSize: 22.0,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                  fontFamily: 'Roboto',
+                ),
               ),
               onTap: () {
                 Navigator.of(context).pop();
@@ -240,10 +281,11 @@ class _drawer_menuState extends State<drawer_menu> {
               title: Text(
                 'Help',
                 style: TextStyle(
-                    fontSize: 22.0,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                    fontFamily: 'Roboto'),
+                  fontSize: 22.0,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                  fontFamily: 'Roboto',
+                ),
               ),
               onTap: () {
                 Navigator.of(context).pop();
@@ -259,10 +301,11 @@ class _drawer_menuState extends State<drawer_menu> {
               title: Text(
                 'upload',
                 style: TextStyle(
-                    fontSize: 22.0,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                    fontFamily: 'Roboto'),
+                  fontSize: 22.0,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                  fontFamily: 'Roboto',
+                ),
               ),
               onTap: () {
                 Navigator.of(context).pop();
@@ -272,16 +315,17 @@ class _drawer_menuState extends State<drawer_menu> {
               },
             ),
           ),
-           TextButton(
+          TextButton(
             onPressed: () {},
             child: ListTile(
               title: Text(
                 'showimage',
                 style: TextStyle(
-                    fontSize: 22.0,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                    fontFamily: 'Roboto'),
+                  fontSize: 22.0,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                  fontFamily: 'Roboto',
+                ),
               ),
               onTap: () {
                 Navigator.of(context).pop();

@@ -15,32 +15,37 @@ class _BtnLocationState extends State<btnLocation> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Location Details"),
-        backgroundColor: Colors.blue.shade700,
-        elevation: 0,
-      ),
       body: Column(
         children: [
-          // Top Section (Placeholder for Map or Image)
-          Container(
-            width: double.infinity,
-            height: 250,
-            margin: const EdgeInsets.only(top: 10),
-            decoration: BoxDecoration(
-              borderRadius: const BorderRadius.only(
-                bottomLeft: Radius.circular(40),
-                bottomRight: Radius.circular(40),
+          // Top Section with Header Image and Go Back Button
+          Stack(
+            children: [
+              Container(
+                width: double.infinity,
+                height: 250,
+                decoration: BoxDecoration(
+                  borderRadius: const BorderRadius.only(
+                    bottomLeft: Radius.circular(40),
+                    bottomRight: Radius.circular(40),
+                  ),
+                  image: const DecorationImage(
+                    image: AssetImage('assets/header_image.jpg'), // Add your header image path
+                    fit: BoxFit.cover,
+                  ),
+                  color: Colors.blue.shade100,
+                ),
               ),
-              color: Colors.blue.shade100,
-            ),
-            child: Center(
-              child: Icon(
-                Icons.location_on,
-                size: 100,
-                color: Colors.blue.shade700,
+              Positioned(
+                top: 40,
+                left: 20,
+                child: IconButton(
+                  icon: const Icon(Icons.arrow_back, color: Colors.white, size: 30),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
               ),
-            ),
+            ],
           ),
 
           const SizedBox(height: 20.0),
@@ -92,13 +97,28 @@ class _BtnLocationState extends State<btnLocation> {
 
                       final data = snapshot.data!.data() as Map<String, dynamic>;
                       final nameLocation = data['nameLocation'] ?? 'Unknown Name';
+                      final description = data['description'] ?? 'No description available';
 
-                      return Text(
-                        nameLocation,
-                        style: const TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            nameLocation,
+                            style: const TextStyle(
+                              fontSize: 28,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          Text(
+                            description,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              height: 1.6,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ],
                       );
                     },
                   ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:parking/drawer.dart';
 import 'package:parking/map_api/btnlocation.dart';
 
 class LocationPage extends StatefulWidget {
@@ -15,43 +16,37 @@ class _LocationPageState extends State<LocationPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        title: const Text("Location"),
+        centerTitle: true,
+      ),
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Text(
-              "TICKET",
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-              ),
-            ),
-          ),
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
               stream: _firestore.collection('Locations').snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(
+                  return const Center(
                     child: CircularProgressIndicator(),
                   );
                 }
 
                 if (snapshot.hasError) {
-                  return Center(
+                  return const Center(
                     child: Text(
                       "Error fetching data",
-                      style: TextStyle(color: Colors.white),
+                      style: TextStyle(color: Colors.red),
                     ),
                   );
                 }
 
                 if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                  return Center(
+                  return const Center(
                     child: Text(
                       "No locations found",
-                      style: TextStyle(color: Colors.white),
+                      style: TextStyle(color: Colors.grey),
                     ),
                   );
                 }
@@ -61,15 +56,21 @@ class _LocationPageState extends State<LocationPage> {
                 return ListView.builder(
                   itemCount: locations.length,
                   itemBuilder: (context, index) {
-                    final location = locations[index].data() as Map<String, dynamic>;
+                    final location =
+                        locations[index].data() as Map<String, dynamic>;
+                    final documentId = locations[index].id; // Get document ID
 
                     return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16.0, vertical: 8.0),
                       child: GestureDetector(
                         onTap: () {
-                            Navigator.of(context).pop();
-                            MaterialPageRoute route =MaterialPageRoute(builder: (c)=>btnLocation());
-                            Navigator.of(context).push(route);
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  btnLocation(documentId: documentId),
+                            ),
+                          );
                         },
                         child: Card(
                           shape: RoundedRectangleBorder(
@@ -82,21 +83,25 @@ class _LocationPageState extends State<LocationPage> {
                               Padding(
                                 padding: const EdgeInsets.all(16.0),
                                 child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
                                     Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          location['nameLocation'] ?? 'Unknown Name',
-                                          style: TextStyle(
+                                          location['nameLocation'] ??
+                                              'Unknown Name',
+                                          style: const TextStyle(
                                             fontSize: 18,
                                             fontWeight: FontWeight.bold,
                                           ),
                                         ),
-                                        SizedBox(height: 4.0),
+                                        const SizedBox(height: 4.0),
                                         Text(
-                                          location['address'] ?? 'Unknown Address',
+                                          location['address'] ??
+                                              'Unknown Address',
                                           style: TextStyle(
                                             fontSize: 14,
                                             color: Colors.grey[600],
@@ -105,11 +110,12 @@ class _LocationPageState extends State<LocationPage> {
                                       ],
                                     ),
                                     Column(
-                                      crossAxisAlignment: CrossAxisAlignment.end,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.end,
                                       children: [
                                         Text(
-                                          "CAR: ${location['car_slots'] ?? '0/0'}",
-                                          style: TextStyle(
+                                          "CAR: ${location['car_slot'] ?? '0/0'}",
+                                          style: const TextStyle(
                                             fontSize: 16,
                                             fontWeight: FontWeight.bold,
                                           ),
@@ -131,46 +137,8 @@ class _LocationPageState extends State<LocationPage> {
           ),
         ],
       ),
-    );
-  }
-}
-
-
-class LocationDetailsPage extends StatelessWidget {
-  final Map<String, dynamic> location;
-
-  const LocationDetailsPage({Key? key, required this.location}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(location['name'] ?? 'Location Details'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              location['name'] ?? 'Unknown Name',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            SizedBox(height: 8),
-            Text(
-              location['address'] ?? 'Unknown Address',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey[700],
-              ),
-            ),
-            SizedBox(height: 16),
-            
-          ],
-        ),
+      drawer: const Drawer(
+        child: drawer_menu(),
       ),
     );
   }

@@ -6,15 +6,8 @@ import 'package:parking/bottombar/maingPage.dart';
 import 'package:parking/bottombar/profilePage.dart';
 import 'package:parking/drawer.dart';
 
+const List screenPage = [mainPage(), ChatPage(), HistoryPage(), ProfilePage()];
 
-
-const List screenPage=[
-  mainPage(),
-  ChatPage(),
-  HistoryPage(),
-  ProfilePage()
-
-];
 class Homepage extends StatefulWidget {
   const Homepage({super.key});
 
@@ -23,18 +16,18 @@ class Homepage extends StatefulWidget {
 }
 
 class _HomepageState extends State<Homepage> {
-
- 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Parking app'),
+        title: const Text(
+          'HOME',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        centerTitle: true,
       ),
-      
-      
-      
-
       body: mainPage(),
       drawer: const drawer_menu(),
     );

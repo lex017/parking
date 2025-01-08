@@ -1,9 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:parking/cash/receip.dart';
+import 'package:parking/map_api/LocationPage.dart';
 
 class btnLocation extends StatefulWidget {
-  const btnLocation({super.key});
+  final String documentId; // Accept document ID dynamically
+
+  const btnLocation({required this.documentId, super.key}); // Constructor to pass the document ID
 
   @override
   State<btnLocation> createState() => _BtnLocationState();
@@ -17,7 +20,6 @@ class _BtnLocationState extends State<btnLocation> {
     return Scaffold(
       body: Column(
         children: [
-          // Top Section with Header Image and Go Back Button
           Stack(
             children: [
               Container(
@@ -29,7 +31,7 @@ class _BtnLocationState extends State<btnLocation> {
                     bottomRight: Radius.circular(40),
                   ),
                   image: const DecorationImage(
-                    image: AssetImage('assets/header_image.jpg'), // Add your header image path
+                    image: AssetImage('assets/images/park1.jpg'), 
                     fit: BoxFit.cover,
                   ),
                   color: Colors.blue.shade100,
@@ -42,6 +44,9 @@ class _BtnLocationState extends State<btnLocation> {
                   icon: const Icon(Icons.arrow_back, color: Colors.white, size: 30),
                   onPressed: () {
                     Navigator.of(context).pop();
+                    MaterialPageRoute route =
+                    MaterialPageRoute(builder: (c) => LocationPage());
+                      Navigator.of(context).push(route);
                   },
                 ),
               ),
@@ -49,8 +54,6 @@ class _BtnLocationState extends State<btnLocation> {
           ),
 
           const SizedBox(height: 20.0),
-
-          // Bottom Section
           Expanded(
             child: Container(
               padding: const EdgeInsets.all(20),
@@ -72,11 +75,10 @@ class _BtnLocationState extends State<btnLocation> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Fetch and display one specific location
                   StreamBuilder<DocumentSnapshot>(
                     stream: FirebaseFirestore.instance
                         .collection('Locations')
-                        .doc('location1') // Replace with the document ID you want
+                        .doc(widget.documentId) 
                         .snapshots(),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {

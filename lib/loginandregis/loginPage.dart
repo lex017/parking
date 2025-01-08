@@ -5,6 +5,7 @@ import 'package:form_field_validator/form_field_validator.dart';
 import 'package:parking/homepage.dart';
 import 'package:parking/loginandregis/registerPage.dart';
 import 'package:parking/model/userdata.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class loginPage extends StatefulWidget {
   const loginPage({super.key});
@@ -16,12 +17,51 @@ class loginPage extends StatefulWidget {
 class _LoginPageState extends State<loginPage> {
   bool obs = true;
   final formkey = GlobalKey<FormState>();
+  bool rememberMe = false;
   Userparking myUser = Userparking();
 
   @override
   void initState() {
     super.initState();
     initializeFirebase();
+    loadCredentials(); // Load saved credentials during initialization
+  }
+
+  Future<void> loadCredentials() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      myUser.email = prefs.getString('email') ?? ''; // Load saved email
+      myUser.Pass = prefs.getString('password') ?? ''; // Load saved password
+      rememberMe = prefs.getBool('rememberMe') ?? false; // Load "Remember Me" state
+    });
+
+    // Auto-login if "Remember Me" is enabled
+    if (rememberMe && myUser.email.isNotEmpty && myUser.Pass.isNotEmpty) {
+      try {
+        await FirebaseAuth.instance.signInWithEmailAndPassword(
+          email: myUser.email,
+          password: myUser.Pass,
+        );
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (c) => Homepage()),
+        );
+      } catch (e) {
+        print("Auto-login failed: $e");
+      }
+    }
+  }
+
+  Future<void> saveCredentials() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (rememberMe) {
+      await prefs.setString('email', myUser.email); // Save email
+      await prefs.setString('password', myUser.Pass); // Save password
+      await prefs.setBool('rememberMe', true); // Save "Remember Me" state
+    } else {
+      await prefs.remove('email'); // Clear saved email
+      await prefs.remove('password'); // Clear saved password
+      await prefs.remove('rememberMe'); // Clear "Remember Me" state
+    }
   }
 
   Future<void> initializeFirebase() async {
@@ -51,16 +91,6 @@ class _LoginPageState extends State<loginPage> {
     });
   }
 
-  Widget loginDisplay() {
-    return SizedBox(
-      width: 160,
-      height: 160,
-      child: Image.asset(
-        "images/p_logo1.png",
-      ),
-    );
-  }
-
   Widget showText() {
     return Text(
       "LOGIN",
@@ -87,12 +117,13 @@ class _LoginPageState extends State<loginPage> {
     return SizedBox(
       width: 350,
       child: TextFormField(
+        initialValue: myUser.email, // Populate with saved email
         onSaved: (String? email) {
           myUser.email = email ?? '';
         },
         validator: MultiValidator([
           RequiredValidator(errorText: "Please enter an email"),
-          EmailValidator(errorText: "Please enter a valid email")
+          EmailValidator(errorText: "Please enter a valid email"),
         ]),
         decoration: const InputDecoration(
           border: UnderlineInputBorder(),
@@ -112,6 +143,7 @@ class _LoginPageState extends State<loginPage> {
     return SizedBox(
       width: 350,
       child: TextFormField(
+        initialValue: myUser.Pass, // Populate with saved password
         obscureText: obs,
         onSaved: (String? pass) {
           myUser.Pass = pass ?? '';
@@ -147,14 +179,15 @@ class _LoginPageState extends State<loginPage> {
       child: ElevatedButton(
         onPressed: () async {
           if (formkey.currentState?.validate() ?? false) {
-            formkey.currentState?.save();
+            formkey.currentState?.save(); // Save form values to `myUser`
             try {
               await FirebaseAuth.instance
                   .signInWithEmailAndPassword(
                 email: myUser.email,
                 password: myUser.Pass,
               )
-                  .then((value) {
+                  .then((value) async {
+                await saveCredentials(); // Save credentials after a successful login
                 formkey.currentState?.reset();
                 Navigator.of(context).pushReplacement(
                   MaterialPageRoute(builder: (c) => Homepage()),
@@ -163,10 +196,10 @@ class _LoginPageState extends State<loginPage> {
             } on FirebaseAuthException catch (e) {
               String errorMessage = 'Something went wrong!';
 
-              if (e.code == 'email-already-in-use') {
-                errorMessage = 'This email is already in use.';
-              } else if (e.code == 'weak-password') {
-                errorMessage = 'The password is too weak.';
+              if (e.code == 'user-not-found') {
+                errorMessage = 'No user found for this email.';
+              } else if (e.code == 'wrong-password') {
+                errorMessage = 'Incorrect password.';
               } else if (e.code == 'invalid-email') {
                 errorMessage = 'The email address is invalid.';
               }
@@ -193,6 +226,25 @@ class _LoginPageState extends State<loginPage> {
         ),
         style: ElevatedButton.styleFrom(backgroundColor: Colors.white),
       ),
+    );
+  }
+
+  Widget rememberMeCheckbox() {
+    return Row(
+      children: [
+        Checkbox(
+          value: rememberMe,
+          onChanged: (value) {
+            setState(() {
+              rememberMe = value ?? false;
+            });
+          },
+        ),
+        const Text(
+          "Remember Me",
+          style: TextStyle(fontSize: 16),
+        ),
+      ],
     );
   }
 
@@ -224,55 +276,57 @@ class _LoginPageState extends State<loginPage> {
   }
 
   @override
-Widget build(BuildContext context) {
-  return Scaffold(
-    body: SingleChildScrollView( 
-      child: Center(
-        child: Container(
-          width: double.infinity,
-          height: MediaQuery.of(context).size.height, 
-          decoration: const BoxDecoration(color: Colors.white),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20.0),
-            child: Form(
-              key: formkey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 30.0),
-                        showText(),
-                        const SizedBox(height: 10.0),
-                        showText1(),
-                      ],
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: SingleChildScrollView(
+        child: Center(
+          child: Container(
+            width: double.infinity,
+            height: MediaQuery.of(context).size.height,
+            decoration: const BoxDecoration(color: Colors.white),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: Form(
+                key: formkey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(height: 30.0),
+                          showText(),
+                          const SizedBox(height: 10.0),
+                          showText1(),
+                        ],
+                      ),
                     ),
-                  ),
-                  Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const SizedBox(height: 100.0),
-                        emailInput(),
-                        const SizedBox(height: 50.0),
-                        passwordInput(),
-                        const SizedBox(height: 60.0),
-                        loginButton(),
-                        const SizedBox(height: 20.0),
-                        signUp(),
-                      ],
+                    Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const SizedBox(height: 100.0),
+                          emailInput(),
+                          const SizedBox(height: 50.0),
+                          passwordInput(),
+                          const SizedBox(height: 30.0),
+                          rememberMeCheckbox(),
+                          const SizedBox(height: 50.0),
+                          loginButton(),
+                          const SizedBox(height: 20.0),
+                          signUp(),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 }

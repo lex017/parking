@@ -3,9 +3,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:http/http.dart' as http;
 import 'package:parking/chose/Owner.dart';
 import 'package:parking/constant/CloudinaryUploader.dart';
 import 'package:parking/constant/getImageClound.dart';
+import 'dart:convert';
+
 import 'package:parking/homepage.dart';
 import 'package:parking/map_api/LocationPage.dart';
 import 'package:parking/menu/Help.dart';
@@ -24,24 +27,67 @@ class _drawer_menuState extends State<drawer_menu> {
   final auth = FirebaseAuth.instance;
   final ImagePicker _picker = ImagePicker();
   File? _profileImage;
+  String cloudinaryUrl = 'YOUR_CLOUDINARY_UPLOAD_URL'; // Replace with Cloudinary Upload URL
+  String cloudinaryPreset = 'YOUR_UPLOAD_PRESET'; // Replace with your Cloudinary Upload Preset
 
   Future<void> _pickProfileImage() async {
-  try {
-    final XFile? pickedFile =
-        await _picker.pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
-      print("Image picked: ${pickedFile.path}");
-      setState(() {
-        _profileImage = File(pickedFile.path);
-      });
-    } else {
-      print("No image selected.");
+    try {
+      final XFile? pickedFile =
+          await _picker.pickImage(source: ImageSource.gallery);
+      if (pickedFile != null) {
+        setState(() {
+          _profileImage = File(pickedFile.path);
+        });
+        await _uploadToCloudinaryAndSave();
+      }
+    } catch (e) {
+      print("Error picking profile image: $e");
     }
-  } catch (e) {
-    print("Error picking profile image: $e");
   }
-}
 
+  Future<void> _uploadToCloudinaryAndSave() async {
+    if (_profileImage == null) return;
+
+    try {
+      // Upload image to Cloudinary
+      var request = http.MultipartRequest('POST', Uri.parse(cloudinaryUrl));
+      request.files.add(await http.MultipartFile.fromPath(
+        'file',
+        _profileImage!.path,
+      ));
+      request.fields['parking'] = cloudinaryPreset;
+
+      var response = await request.send();
+      if (response.statusCode == 200) {
+        final responseData = await http.Response.fromStream(response);
+        final data = json.decode(responseData.body);
+
+        final imageUrl = data['secure_url'];
+        print("Uploaded Image URL: $imageUrl");
+
+        // Save the URL to Firestore
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(auth.currentUser?.uid)
+            .update({'profileImage': imageUrl});
+
+        setState(() {
+          _profileImage = null; // Clear the local image after upload
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Profile updated successfully!')),
+        );
+      } else {
+        print("Error uploading to Cloudinary: ${response.statusCode}");
+      }
+    } catch (e) {
+      print("Error uploading image: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to upload image')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -111,11 +157,46 @@ class _drawer_menuState extends State<drawer_menu> {
                           width: 90,
                           height: 90,
                         )
-                      : Image.asset(
-                          'images/logo.png',
-                          fit: BoxFit.cover,
-                          width: 90,
-                          height: 90,
+                      : FutureBuilder<DocumentSnapshot>(
+                          future: FirebaseFirestore.instance
+                              .collection('users')
+                              .doc(auth.currentUser?.uid)
+                              .get(),
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return const CircularProgressIndicator();
+                            }
+                            if (snapshot.hasError ||
+                                !snapshot.hasData ||
+                                !snapshot.data!.exists) {
+                              return Image.asset(
+                                'images/profile-user.png',
+                                fit: BoxFit.cover,
+                                width: 90,
+                                height: 90,
+                              );
+                            }
+
+                            final data =
+                                snapshot.data!.data() as Map<String, dynamic>;
+                            final profileImage =
+                                data['profileImage'] ?? 'images/profile-user.png';
+
+                            return Image.network(
+                              profileImage,
+                              fit: BoxFit.cover,
+                              width: 90,
+                              height: 90,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  Image.asset(
+                                'images/profile-user.png',
+                                fit: BoxFit.cover,
+                                width: 90,
+                                height: 90,
+                              ),
+                            );
+                          },
                         ),
                 ),
               ),

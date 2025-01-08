@@ -196,6 +196,10 @@ class _OwnerMainState extends State<ownerMain> {
                final addressName =
                   locationData['address'] ?? 'Unknown Location';
               final locationUrl = locationData['url'] ?? '';
+               final description =
+                  locationData['description'] ?? 'Unknown Location';
+                  final car_slot =
+                  locationData['car_slot'] ?? 'Unknown Location';
 
               return Card(
                 shape: RoundedRectangleBorder(
@@ -225,6 +229,10 @@ class _OwnerMainState extends State<ownerMain> {
                         "Address: $addressName",
                         style: const TextStyle(fontSize: 14),
                       ),
+                      Text(
+                        "car_slot: $car_slot",
+                        style: const TextStyle(fontSize: 14),
+                      ),
                       const SizedBox(height: 8),
                       ElevatedButton.icon(
                         icon: const Icon(Icons.map),
@@ -244,10 +252,13 @@ class _OwnerMainState extends State<ownerMain> {
     );
   }
 
-  void _showAddLocationDialog() {
+ void _showAddLocationDialog() {
+  final _formKey = GlobalKey<FormState>(); // Form key for validation
   final _nameController = TextEditingController();
   final _addressController = TextEditingController();
   final _urlController = TextEditingController();
+  final _descriptionController = TextEditingController();
+  final _carSlotController = TextEditingController();
 
   showDialog(
     context: context,
@@ -267,63 +278,99 @@ class _OwnerMainState extends State<ownerMain> {
           ],
         ),
         content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: _nameController,
-                decoration: InputDecoration(
-                  labelText: "Location Name",
-                  labelStyle: const TextStyle(fontSize: 16),
-                  prefixIcon: const Icon(Icons.location_on, color: Colors.blue),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10.0),
-                    borderSide: const BorderSide(color: Colors.blue, width: 1.5),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextFormField(
+                  controller: _nameController,
+                  decoration: InputDecoration(
+                    labelText: "Location Name",
+                    prefixIcon: const Icon(Icons.location_on, color: Colors.blue),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
                   ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10.0),
-                    borderSide:
-                        const BorderSide(color: Colors.blueAccent, width: 2.0),
-                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return "Please enter the location name";
+                    }
+                    return null;
+                  },
                 ),
-              ),
-              const SizedBox(height: 16),
-               TextField(
-                controller: _addressController,
-                decoration: InputDecoration(
-                  labelText: "Address",
-                  labelStyle: const TextStyle(fontSize: 16),
-                  prefixIcon: const Icon(Icons.location_on, color: Colors.blue),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10.0),
-                    borderSide: const BorderSide(color: Colors.blue, width: 1.5),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _addressController,
+                  decoration: InputDecoration(
+                    labelText: "Address",
+                    prefixIcon: const Icon(Icons.location_on, color: Colors.blue),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
                   ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10.0),
-                    borderSide:
-                        const BorderSide(color: Colors.blueAccent, width: 2.0),
-                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return "Please enter the address";
+                    }
+                    return null;
+                  },
                 ),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: _urlController,
-                decoration: InputDecoration(
-                  labelText: "Google Maps URL",
-                  labelStyle: const TextStyle(fontSize: 16),
-                  prefixIcon: const Icon(Icons.link, color: Colors.blue),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10.0),
-                    borderSide: const BorderSide(color: Colors.blue, width: 1.5),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _urlController,
+                  decoration: InputDecoration(
+                    labelText: "Google Maps URL",
+                    prefixIcon: const Icon(Icons.link, color: Colors.blue),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
                   ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10.0),
-                    borderSide:
-                        const BorderSide(color: Colors.blueAccent, width: 2.0),
-                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return "Please enter the Google Maps URL";
+                    }
+                    return null;
+                  },
                 ),
-              ),
-            ],
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _descriptionController,
+                  decoration: InputDecoration(
+                    labelText: "Description",
+                    prefixIcon: const Icon(Icons.description, color: Colors.blue),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return "Please enter the description";
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _carSlotController,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    labelText: "Car Slots (min 3)",
+                    prefixIcon: const Icon(Icons.directions_car, color: Colors.blue),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                  ),
+                  validator: (value) {
+                    final carSlot = int.tryParse(value ?? '') ?? 0;
+                    if (carSlot < 3) {
+                      return "Car slots must be at least 3";
+                    }
+                    return null;
+                  },
+                ),
+              ],
+            ),
           ),
         ),
         actions: [
@@ -343,24 +390,30 @@ class _OwnerMainState extends State<ownerMain> {
               ),
             ),
             onPressed: () async {
-              final name = _nameController.text.trim();
-              final address = _addressController.text.trim();
-              final url = _urlController.text.trim();
+              if (_formKey.currentState?.validate() ?? false) {
+                final name = _nameController.text.trim();
+                final address = _addressController.text.trim();
+                final url = _urlController.text.trim();
+                final description = _descriptionController.text.trim();
+                final carSlot = int.parse(_carSlotController.text.trim());
 
-              if (name.isNotEmpty && url.isNotEmpty) {
-                await FirebaseFirestore.instance.collection('Locations').add({
+                // Generate custom document ID
+                final collection =
+                    FirebaseFirestore.instance.collection('Locations');
+                final snapshot = await collection.get();
+                final newId = "location${snapshot.docs.length + 1}";
+
+                // Add data with custom ID
+                await collection.doc(newId).set({
                   'nameLocation': name,
-                  'address':address,
+                  'address': address,
                   'url': url,
+                  'description': description,
+                  'car_slot': carSlot,
                 });
+
+                print("Document added with ID: $newId");
                 Navigator.pop(context);
-              } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text("All fields are required!"),
-                    backgroundColor: Colors.red,
-                  ),
-                );
               }
             },
             child: const Text(
@@ -374,9 +427,11 @@ class _OwnerMainState extends State<ownerMain> {
   );
 }
 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text("Owner Main"),
       ),

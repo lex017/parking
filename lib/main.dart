@@ -1,11 +1,18 @@
+import 'package:device_preview/device_preview.dart';
 import 'package:flutter/material.dart';
+import 'package:parking/bottombar/maingPage.dart';
 import 'package:parking/loginandregis/firstpage.dart';
 import 'package:parking/loginandregis/loginPage.dart';
-import 'package:parking/map_api/btnlocation.dart';
+
 
 
 void main(){
-  runApp(parking());
+  runApp(
+    DevicePreview(
+      builder: (context) =>  // Wrap your app
+    parking()
+      )
+    );
 }
 
 class parking extends StatelessWidget {
@@ -33,7 +40,7 @@ class parking extends StatelessWidget {
         )
       ),
 
-      home: firstpage()
+      home: loginPage()
     );
   }
 }   

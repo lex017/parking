@@ -4,15 +4,9 @@ import 'package:parking/bottombar/maingPage.dart';
 import 'package:parking/loginandregis/firstpage.dart';
 import 'package:parking/loginandregis/loginPage.dart';
 
-
-
-void main(){
-  runApp(
-    DevicePreview(
-      builder: (context) =>  // Wrap your app
-    parking()
-      )
-    );
+void main() {
+  runApp(// Wrap your app
+      parking());
 }
 
 class parking extends StatelessWidget {
@@ -21,26 +15,20 @@ class parking extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      theme: ThemeData(
-        appBarTheme: AppBarTheme(
-          color: Colors.white,
-          titleTextStyle: const TextStyle(
-            color: Colors.black,
-            fontSize: 22.0,
-
-          ),
-          iconTheme: const IconThemeData(
-            color: Colors.black,
-            size: 33.0
-          )
-        ),
-        bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-          selectedLabelStyle: TextStyle(fontSize: 25,color: Colors.white),
-          unselectedLabelStyle: TextStyle(fontSize: 14,color: Colors.white),
-        )
-      ),
-
-      home: loginPage()
-    );
+        theme: ThemeData(
+            appBarTheme: AppBarTheme(
+                color: Colors.white,
+                titleTextStyle: const TextStyle(
+                  color: Colors.black,
+                  fontSize: 22.0,
+                ),
+                iconTheme:
+                    const IconThemeData(color: Colors.black, size: 33.0)),
+            bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+              selectedLabelStyle: TextStyle(fontSize: 25, color: Colors.white),
+              unselectedLabelStyle:
+                  TextStyle(fontSize: 14, color: Colors.white),
+            )),
+        home: loginPage());
   }
-}   
+}

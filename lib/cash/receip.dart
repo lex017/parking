@@ -31,21 +31,11 @@ class _BillPageState extends State<BillPage> {
         centerTitle: true,
         backgroundColor: Colors.white,
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(20.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Title
-            // const Center(
-            //   child: Text(
-            //     "Payment Receipt",
-            //     style: TextStyle(
-            //       fontSize: 22,
-            //       fontWeight: FontWeight.bold,
-            //     ),
-            //   ),
-            // ),
             const SizedBox(height: 20),
 
             // Transaction Details
@@ -82,8 +72,8 @@ class _BillPageState extends State<BillPage> {
               isBold: true,
               fontSize: 20,
             ),
-            // const Spacer(),
             const SizedBox(height: 30),
+
             // QR Code Section
             Center(
               child: QrImageView(

@@ -1,14 +1,28 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 import 'package:parking/cash/receip.dart';
 
 class PayPage extends StatefulWidget {
-  const PayPage({super.key});
+  const PayPage({super.key, required int packageHours});
 
   @override
   State<PayPage> createState() => _PayPageState();
 }
 
 class _PayPageState extends State<PayPage> {
+  File? _pickedImage;
+  final ImagePicker _picker = ImagePicker();
+
+  Future<void> _pickImage() async {
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    if (image != null) {
+      setState(() {
+        _pickedImage = File(image.path);
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -17,7 +31,7 @@ class _PayPageState extends State<PayPage> {
         backgroundColor: Colors.blue,
         centerTitle: true,
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(20.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -32,7 +46,7 @@ class _PayPageState extends State<PayPage> {
             ),
             const SizedBox(height: 8),
             const Text(
-              "25.000 KIP",
+              "25,000 KIP",
               style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
@@ -52,7 +66,7 @@ class _PayPageState extends State<PayPage> {
             const SizedBox(height: 8),
             TextField(
               decoration: InputDecoration(
-                labelText: "Card Number",
+                labelText: "Account Number",
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
@@ -66,8 +80,8 @@ class _PayPageState extends State<PayPage> {
                 Expanded(
                   child: TextField(
                     decoration: InputDecoration(
-                      labelText: "Expiry Date",
-                      hintText: "MM/YY",
+                      labelText: "MM/YY",
+                      hintText: "Time",
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
@@ -81,13 +95,11 @@ class _PayPageState extends State<PayPage> {
                   child: TextField(
                     decoration: InputDecoration(
                       labelText: "CVV",
-                      hintText: "123",
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
                     keyboardType: TextInputType.number,
-                    obscureText: true,
                   ),
                 ),
               ],
@@ -97,10 +109,46 @@ class _PayPageState extends State<PayPage> {
             // Name on Card
             TextField(
               decoration: InputDecoration(
-                labelText: "Name on Card",
+                labelText: "Name",
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            // Picture Picker
+            const Text(
+              "Upload Picture",
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 10),
+            GestureDetector(
+              onTap: _pickImage,
+              child: Container(
+                height: 150,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: _pickedImage != null
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: Image.file(
+                          _pickedImage!,
+                          fit: BoxFit.cover,
+                        ),
+                      )
+                    : const Center(
+                        child: Text(
+                          "Tap to upload",
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                      ),
               ),
             ),
             const SizedBox(height: 40),
@@ -109,9 +157,9 @@ class _PayPageState extends State<PayPage> {
             Center(
               child: ElevatedButton(
                 onPressed: () {
-                            Navigator.of(context).pop();
-                            MaterialPageRoute route =MaterialPageRoute(builder: (c)=>BillPage());
-                            Navigator.of(context).push(route);
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (c) => const BillPage()),
+                  );
                 },
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),

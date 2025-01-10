@@ -1,12 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:parking/cash/QrPay.dart';
+import 'package:parking/cash/payPage.dart';
 import 'package:parking/cash/receip.dart';
 import 'package:parking/map_api/LocationPage.dart';
 
 class btnLocation extends StatefulWidget {
-  final String documentId; // Accept document ID dynamically
+  final String documentId;
 
-  const btnLocation({required this.documentId, super.key}); // Constructor to pass the document ID
+  const btnLocation({required this.documentId, super.key});
 
   @override
   State<btnLocation> createState() => _BtnLocationState();
@@ -31,7 +33,7 @@ class _BtnLocationState extends State<btnLocation> {
                     bottomRight: Radius.circular(40),
                   ),
                   image: const DecorationImage(
-                    image: AssetImage('assets/images/park1.jpg'), 
+                    image: AssetImage('assets/images/park1.jpg'),
                     fit: BoxFit.cover,
                   ),
                   color: Colors.blue.shade100,
@@ -41,18 +43,18 @@ class _BtnLocationState extends State<btnLocation> {
                 top: 40,
                 left: 20,
                 child: IconButton(
-                  icon: const Icon(Icons.arrow_back, color: Colors.white, size: 30),
+                  icon: const Icon(Icons.arrow_back,
+                      color: Colors.white, size: 30),
                   onPressed: () {
                     Navigator.of(context).pop();
                     MaterialPageRoute route =
-                    MaterialPageRoute(builder: (c) => LocationPage());
-                      Navigator.of(context).push(route);
+                        MaterialPageRoute(builder: (c) => LocationPage());
+                    Navigator.of(context).push(route);
                   },
                 ),
               ),
             ],
           ),
-
           const SizedBox(height: 20.0),
           Expanded(
             child: Container(
@@ -78,7 +80,7 @@ class _BtnLocationState extends State<btnLocation> {
                   StreamBuilder<DocumentSnapshot>(
                     stream: FirebaseFirestore.instance
                         .collection('Locations')
-                        .doc(widget.documentId) 
+                        .doc(widget.documentId)
                         .snapshots(),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
@@ -97,9 +99,12 @@ class _BtnLocationState extends State<btnLocation> {
                         );
                       }
 
-                      final data = snapshot.data!.data() as Map<String, dynamic>;
-                      final nameLocation = data['nameLocation'] ?? 'Unknown Name';
-                      final description = data['description'] ?? 'No description available';
+                      final data =
+                          snapshot.data!.data() as Map<String, dynamic>;
+                      final nameLocation =
+                          data['nameLocation'] ?? 'Unknown Name';
+                      final description =
+                          data['description'] ?? 'No description available';
 
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -191,13 +196,15 @@ class _BtnLocationState extends State<btnLocation> {
 
                       ElevatedButton.icon(
                         onPressed: selectedHours == null
-                            ? null
+                            ? null // Disable the button if no hour is selected
                             : () {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(builder: (c) => BillPage()),
-                                );
+                                Navigator.of(context).pop();
+                                MaterialPageRoute route =
+                                    MaterialPageRoute(builder: (c) => QrPay());
+                                Navigator.of(context).push(route);
                               },
-                        icon: const Icon(Icons.arrow_forward, color: Colors.white),
+                        icon: const Icon(Icons.arrow_forward,
+                            color: Colors.white),
                         label: const Text(
                           "GO",
                           style: TextStyle(fontSize: 18, color: Colors.white),
@@ -206,8 +213,9 @@ class _BtnLocationState extends State<btnLocation> {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 24, vertical: 14),
                           backgroundColor: selectedHours == null
-                              ? Colors.grey
-                              : Colors.blue.shade700,
+                              ? Colors.grey // Set to grey when disabled
+                              : Colors
+                                  .blue.shade700, // Set to blue when enabled
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(20),
                           ),

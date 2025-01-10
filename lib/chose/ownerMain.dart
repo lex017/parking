@@ -1,8 +1,12 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart'; // For opening the URL (Google Maps)
+import 'package:http/http.dart' as http;
 
 class ownerMain extends StatefulWidget {
   const ownerMain({super.key});
@@ -41,7 +45,7 @@ class _OwnerMainState extends State<ownerMain> {
     }
   }
 
-   // Function to toggle the status in Firestore
+  // Function to toggle the status in Firestore
   void toggleStatus(String currentStatus) async {
     String newStatus = currentStatus == "Online" ? "Offline" : "Online";
 
@@ -117,7 +121,8 @@ class _OwnerMainState extends State<ownerMain> {
       ),
     );
   }
-   // Real-time profile widget
+
+  // Real-time profile widget
   Widget nameProfile() {
     return StreamBuilder<DocumentSnapshot>(
       stream: FirebaseFirestore.instance
@@ -159,6 +164,7 @@ class _OwnerMainState extends State<ownerMain> {
       },
     );
   }
+
   Widget parkLocation() {
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance.collection('Locations').snapshots(),
@@ -193,13 +199,11 @@ class _OwnerMainState extends State<ownerMain> {
                   locations[index].data() as Map<String, dynamic>;
               final locationName =
                   locationData['nameLocation'] ?? 'Unknown Location';
-               final addressName =
-                  locationData['address'] ?? 'Unknown Location';
+              final addressName = locationData['address'] ?? 'Unknown Location';
               final locationUrl = locationData['url'] ?? '';
-               final description =
+              final description =
                   locationData['description'] ?? 'Unknown Location';
-                  final car_slot =
-                  locationData['car_slot'] ?? 'Unknown Location';
+              final car_slot = locationData['car_slot'] ?? 'Unknown Location';
 
               return Card(
                 shape: RoundedRectangleBorder(
@@ -219,7 +223,7 @@ class _OwnerMainState extends State<ownerMain> {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                       const SizedBox(height: 8),
+                      const SizedBox(height: 8),
                       Text(
                         "Location: $locationName",
                         style: const TextStyle(fontSize: 14),
@@ -252,181 +256,262 @@ class _OwnerMainState extends State<ownerMain> {
     );
   }
 
- void _showAddLocationDialog() {
-  final _formKey = GlobalKey<FormState>(); // Form key for validation
-  final _nameController = TextEditingController();
-  final _addressController = TextEditingController();
-  final _urlController = TextEditingController();
-  final _descriptionController = TextEditingController();
-  final _carSlotController = TextEditingController();
+  void _showAddLocationDialog() {
+    final _formKey = GlobalKey<FormState>();
+    final _nameController = TextEditingController();
+    final _addressController = TextEditingController();
+    final _urlController = TextEditingController();
+    final _descriptionController = TextEditingController();
+    final _carSlotController = TextEditingController();
+    File? _selectedImage;
 
-  showDialog(
-    context: context,
-    builder: (context) {
-      return AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20.0),
-        ),
-        title: Row(
-          children: const [
-            Icon(Icons.add_location_alt, color: Colors.blue, size: 30),
-            SizedBox(width: 8),
-            Text(
-              "Add New Location",
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-          ],
-        ),
-        content: SingleChildScrollView(
-          child: Form(
-            key: _formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextFormField(
-                  controller: _nameController,
-                  decoration: InputDecoration(
-                    labelText: "Location Name",
-                    prefixIcon: const Icon(Icons.location_on, color: Colors.blue),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10.0),
-                    ),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return "Please enter the location name";
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _addressController,
-                  decoration: InputDecoration(
-                    labelText: "Address",
-                    prefixIcon: const Icon(Icons.location_on, color: Colors.blue),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10.0),
-                    ),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return "Please enter the address";
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _urlController,
-                  decoration: InputDecoration(
-                    labelText: "Google Maps URL",
-                    prefixIcon: const Icon(Icons.link, color: Colors.blue),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10.0),
-                    ),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return "Please enter the Google Maps URL";
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _descriptionController,
-                  decoration: InputDecoration(
-                    labelText: "Description",
-                    prefixIcon: const Icon(Icons.description, color: Colors.blue),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10.0),
-                    ),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return "Please enter the description";
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _carSlotController,
-                  keyboardType: TextInputType.number,
-                  decoration: InputDecoration(
-                    labelText: "Car Slots (min 3)",
-                    prefixIcon: const Icon(Icons.directions_car, color: Colors.blue),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10.0),
-                    ),
-                  ),
-                  validator: (value) {
-                    final carSlot = int.tryParse(value ?? '') ?? 0;
-                    if (carSlot < 3) {
-                      return "Car slots must be at least 3";
-                    }
-                    return null;
-                  },
-                ),
-              ],
-            ),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text(
-              "Cancel",
-              style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
-            ),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10.0),
-              ),
-            ),
-            onPressed: () async {
-              if (_formKey.currentState?.validate() ?? false) {
-                final name = _nameController.text.trim();
-                final address = _addressController.text.trim();
-                final url = _urlController.text.trim();
-                final description = _descriptionController.text.trim();
-                final carSlot = int.parse(_carSlotController.text.trim());
+    Future<String?> _uploadImageToCloudinary(File image) async {
+  try {
+    const cloudinaryUrl =
+        "https://api.cloudinary.com/v1_1/doiq3nkso/image/upload";
+    const uploadPreset = "parking";
 
-                // Generate custom document ID
-                final collection =
-                    FirebaseFirestore.instance.collection('Locations');
-                final snapshot = await collection.get();
-                final newId = "location${snapshot.docs.length + 1}";
+    final request = http.MultipartRequest("POST", Uri.parse(cloudinaryUrl))
+      ..fields['upload_preset'] = uploadPreset
+      ..files.add(await http.MultipartFile.fromPath('file', image.path));
 
-                // Add data with custom ID
-                await collection.doc(newId).set({
-                  'nameLocation': name,
-                  'address': address,
-                  'url': url,
-                  'description': description,
-                  'car_slot': carSlot,
-                });
-
-                print("Document added with ID: $newId");
-                Navigator.pop(context);
-              }
-            },
-            child: const Text(
-              "Add",
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-          ),
-        ],
-      );
-    },
-  );
+    final response = await request.send();
+    if (response.statusCode == 200) {
+      final responseBody = await response.stream.bytesToString();
+      final jsonResponse = jsonDecode(responseBody);
+      return jsonResponse['secure_url'];
+    }
+    print("Failed to upload image: ${response.statusCode}");
+    return null;
+  } catch (e) {
+    print("Error uploading image: $e");
+    return null;
+  }
 }
 
+Future<void> _pickImage() async {
+  try {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      setState(() {
+        _selectedImage = File(pickedFile.path);
+      });
+      // Automatically upload the image once picked
+      final uploadedUrl = await _uploadImageToCloudinary(_selectedImage!);
+      if (uploadedUrl != null) {
+        print("Uploaded Image URL: $uploadedUrl");
+        // Save the uploaded URL to Firestore or use it further
+      } else {
+        print("Failed to upload the image.");
+      }
+    }
+  } catch (e) {
+    print("Error picking image: $e");
+  }
+}
+
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20.0),
+          ),
+          title: Row(
+            children: const [
+              Icon(Icons.add_location_alt, color: Colors.blue, size: 30),
+              SizedBox(width: 8),
+              Text(
+                "Add New Location",
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          content: SingleChildScrollView(
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextFormField(
+                    controller: _nameController,
+                    decoration: InputDecoration(
+                      labelText: "Location Name",
+                      prefixIcon:
+                          const Icon(Icons.location_on, color: Colors.blue),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10.0),
+                      ),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return "Please enter the location name";
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _addressController,
+                    decoration: InputDecoration(
+                      labelText: "Address",
+                      prefixIcon:
+                          const Icon(Icons.location_on, color: Colors.blue),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10.0),
+                      ),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return "Please enter the address";
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _urlController,
+                    decoration: InputDecoration(
+                      labelText: "Google Maps URL",
+                      prefixIcon: const Icon(Icons.link, color: Colors.blue),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10.0),
+                      ),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return "Please enter the Google Maps URL";
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _descriptionController,
+                    decoration: InputDecoration(
+                      labelText: "Description",
+                      prefixIcon:
+                          const Icon(Icons.description, color: Colors.blue),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10.0),
+                      ),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return "Please enter the description";
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _carSlotController,
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      labelText: "Car Slots (min 3)",
+                      prefixIcon:
+                          const Icon(Icons.directions_car, color: Colors.blue),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10.0),
+                      ),
+                    ),
+                    validator: (value) {
+                      final carSlot = int.tryParse(value ?? '') ?? 0;
+                      if (carSlot < 3) {
+                        return "Car slots must be at least 3";
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton.icon(
+                    onPressed: _pickImage,
+                    icon: const Icon(Icons.image),
+                    label: const Text("Pick Image"),
+                  ),
+                  if (_selectedImage != null)
+                    Column(
+                      children: [
+                        Image.file(
+                          _selectedImage!,
+                          height: 150,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                        ),
+                        const SizedBox(height: 10),
+                        const Text(
+                          "Image picked and ready to upload.",
+                          style: TextStyle(color: Colors.green),
+                        ),
+                      ],
+                    ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text(
+                "Cancel",
+                style:
+                    TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+              ),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10.0),
+                ),
+              ),
+              onPressed: () async {
+                if (_formKey.currentState?.validate() ?? false) {
+                  String? imageUrl;
+                  if (_selectedImage != null) {
+                    imageUrl = await _uploadImageToCloudinary(_selectedImage!);
+                  }
+
+                  final name = _nameController.text.trim();
+                  final address = _addressController.text.trim();
+                  final url = _urlController.text.trim();
+                  final description = _descriptionController.text.trim();
+                  final carSlot = int.parse(_carSlotController.text.trim());
+
+                  // Generate custom document ID
+                  final collection =
+                      FirebaseFirestore.instance.collection('Locations');
+                  final snapshot = await collection.get();
+                  final newId = "location${snapshot.docs.length + 1}";
+
+                  // Add data with custom ID
+                  await collection.doc(newId).set({
+                    'nameLocation': name,
+                    'address': address,
+                    'url': url,
+                    'description': description,
+                    'car_slot': carSlot,
+                    'imageUrl': imageUrl ?? '',
+                  });
+
+                  print("Document added with ID: $newId");
+                  Navigator.pop(context);
+                }
+              },
+              child: const Text(
+                "Add",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {

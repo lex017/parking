@@ -10,6 +10,7 @@ import 'package:parking/constant/getImageClound.dart';
 import 'dart:convert';
 
 import 'package:parking/homepage.dart';
+import 'package:parking/loginandregis/loginPage.dart';
 import 'package:parking/map_api/LocationPage.dart';
 import 'package:parking/menu/Help.dart';
 import 'package:parking/menu/Wallet.dart';
@@ -400,7 +401,7 @@ class _drawer_menuState extends State<drawer_menu> {
             onPressed: () {},
             child: ListTile(
               title: Text(
-                'showimage',
+                'Logout',
                 style: TextStyle(
                   fontSize: 22.0,
                   fontWeight: FontWeight.bold,
@@ -411,7 +412,7 @@ class _drawer_menuState extends State<drawer_menu> {
               onTap: () {
                 Navigator.of(context).pop();
                 MaterialPageRoute route =
-                    MaterialPageRoute(builder: (c) => GetImage());
+                    MaterialPageRoute(builder: (c) => loginPage());
                 Navigator.of(context).push(route);
               },
             ),

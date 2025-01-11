@@ -1,8 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:parking/cash/QrPay.dart';
-import 'package:parking/cash/payPage.dart';
-import 'package:parking/cash/receip.dart';
 import 'package:parking/map_api/LocationPage.dart';
 
 class btnLocation extends StatefulWidget {
@@ -22,38 +19,80 @@ class _BtnLocationState extends State<btnLocation> {
     return Scaffold(
       body: Column(
         children: [
-          Stack(
-            children: [
-              Container(
-                width: double.infinity,
-                height: 250,
-                decoration: BoxDecoration(
-                  borderRadius: const BorderRadius.only(
-                    bottomLeft: Radius.circular(40),
-                    bottomRight: Radius.circular(40),
+          StreamBuilder<DocumentSnapshot>(
+            stream: FirebaseFirestore.instance
+                .collection('Locations')
+                .doc(widget.documentId)
+                .snapshots(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const SizedBox(
+                  height: 250,
+                  child: Center(child: CircularProgressIndicator()),
+                );
+              }
+
+              if (snapshot.hasError) {
+                return const SizedBox(
+                  height: 250,
+                  child: Center(
+                    child: Text(
+                      "Error loading image",
+                      style: TextStyle(color: Colors.red),
+                    ),
                   ),
-                  image: const DecorationImage(
-                    image: AssetImage('assets/images/park1.jpg'),
-                    fit: BoxFit.cover,
+                );
+              }
+
+              if (!snapshot.hasData || !snapshot.data!.exists) {
+                return const SizedBox(
+                  height: 250,
+                  child: Center(
+                    child: Text(
+                      "No image available",
+                      style: TextStyle(color: Colors.grey),
+                    ),
                   ),
-                  color: Colors.blue.shade100,
-                ),
-              ),
-              Positioned(
-                top: 40,
-                left: 20,
-                child: IconButton(
-                  icon: const Icon(Icons.arrow_back,
-                      color: Colors.white, size: 30),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                    MaterialPageRoute route =
-                        MaterialPageRoute(builder: (c) => LocationPage());
-                    Navigator.of(context).push(route);
-                  },
-                ),
-              ),
-            ],
+                );
+              }
+
+              final data = snapshot.data!.data() as Map<String, dynamic>;
+              final imageUrl = data['imageUrl'] ?? '';
+
+              return Stack(
+                children: [
+                  AspectRatio(
+                    aspectRatio: 16 / 9,
+                    child: imageUrl.isNotEmpty
+                        ? Image.network(
+                            imageUrl,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) =>
+                                const Center(
+                              child: Text("Failed to load image"),
+                            ),
+                          )
+                        : const Center(
+                            child: Text("No image available"),
+                          ),
+                  ),
+                  Positioned(
+                    top: 40,
+                    left: 20,
+                    child: IconButton(
+                      icon: const Icon(Icons.arrow_back,
+                          color: Colors.white, size: 30),
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                        MaterialPageRoute route =
+                            MaterialPageRoute(builder: (c) => LocationPage());
+                        Navigator.of(context).push(route);
+                      },
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
           const SizedBox(height: 20.0),
           Expanded(
@@ -132,7 +171,6 @@ class _BtnLocationState extends State<btnLocation> {
 
                   const SizedBox(height: 20),
 
-                  // Hour Selection Dropdown
                   Row(
                     children: [
                       const Text(
@@ -171,11 +209,9 @@ class _BtnLocationState extends State<btnLocation> {
 
                   const Spacer(),
 
-                  // Bottom Row with Button
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      // Price Display
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -196,12 +232,9 @@ class _BtnLocationState extends State<btnLocation> {
 
                       ElevatedButton.icon(
                         onPressed: selectedHours == null
-                            ? null // Disable the button if no hour is selected
+                            ? null
                             : () {
                                 Navigator.of(context).pop();
-                                MaterialPageRoute route =
-                                    MaterialPageRoute(builder: (c) => QrPay());
-                                Navigator.of(context).push(route);
                               },
                         icon: const Icon(Icons.arrow_forward,
                             color: Colors.white),
@@ -213,9 +246,8 @@ class _BtnLocationState extends State<btnLocation> {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 24, vertical: 14),
                           backgroundColor: selectedHours == null
-                              ? Colors.grey // Set to grey when disabled
-                              : Colors
-                                  .blue.shade700, // Set to blue when enabled
+                              ? Colors.grey
+                              : Colors.blue.shade700,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(20),
                           ),

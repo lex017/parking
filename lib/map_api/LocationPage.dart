@@ -80,6 +80,34 @@ class _LocationPageState extends State<LocationPage> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
+                              if (location['imageUrl'] != null &&
+                                  location['imageUrl'].isNotEmpty)
+                                ClipRRect(
+                                  borderRadius: const BorderRadius.only(
+                                    topLeft: Radius.circular(16.0),
+                                    topRight: Radius.circular(16.0),
+                                  ),
+                                  child: Image.network(
+                                    location['imageUrl'],
+                                    height: 150,
+                                    width: double.infinity,
+                                    fit: BoxFit.cover,
+                                    loadingBuilder:
+                                        (context, child, loadingProgress) {
+                                      if (loadingProgress == null) return child;
+                                      return const Center(
+                                          child: CircularProgressIndicator());
+                                    },
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return const Center(
+                                        child: Text(
+                                          "Failed to load image",
+                                          style: TextStyle(color: Colors.red),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
                               Padding(
                                 padding: const EdgeInsets.all(16.0),
                                 child: Row(
@@ -114,7 +142,7 @@ class _LocationPageState extends State<LocationPage> {
                                           CrossAxisAlignment.end,
                                       children: [
                                         Text(
-                                          "CAR: ${location['car_slot'] ?? '0/0'}",
+                                          "CAR: 0/${location['car_slot'] ?? '0/0'}",
                                           style: const TextStyle(
                                             fontSize: 16,
                                             fontWeight: FontWeight.bold,

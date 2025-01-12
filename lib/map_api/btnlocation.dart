@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:parking/cash/QrPay.dart';
 import 'package:parking/map_api/LocationPage.dart';
 
 class btnLocation extends StatefulWidget {
@@ -168,9 +169,7 @@ class _BtnLocationState extends State<btnLocation> {
                       );
                     },
                   ),
-
                   const SizedBox(height: 20),
-
                   Row(
                     children: [
                       const Text(
@@ -206,9 +205,7 @@ class _BtnLocationState extends State<btnLocation> {
                       ),
                     ],
                   ),
-
                   const Spacer(),
-
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -229,12 +226,14 @@ class _BtnLocationState extends State<btnLocation> {
                           ),
                         ],
                       ),
-
                       ElevatedButton.icon(
                         onPressed: selectedHours == null
                             ? null
                             : () {
                                 Navigator.of(context).pop();
+                                MaterialPageRoute route =
+                                    MaterialPageRoute(builder: (c) => QrPay());
+                                Navigator.of(context).push(route);
                               },
                         icon: const Icon(Icons.arrow_forward,
                             color: Colors.white),

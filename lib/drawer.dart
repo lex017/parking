@@ -1,14 +1,15 @@
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
-import 'package:parking/chose/Owner.dart';
-import 'package:parking/constant/CloudinaryUploader.dart';
-import 'package:parking/constant/getImageClound.dart';
 import 'dart:convert';
 
+import 'package:parking/chose/Owner.dart';
+import 'package:parking/constant/CloudinaryUploader.dart';
 import 'package:parking/homepage.dart';
 import 'package:parking/loginandregis/loginPage.dart';
 import 'package:parking/map_api/LocationPage.dart';
@@ -21,71 +22,96 @@ class drawer_menu extends StatefulWidget {
   const drawer_menu({super.key});
 
   @override
-  State<drawer_menu> createState() => _drawer_menuState();
+  State<drawer_menu> createState() => _DrawerMenuState();
 }
 
-class _drawer_menuState extends State<drawer_menu> {
+class _DrawerMenuState extends State<drawer_menu> {
   final auth = FirebaseAuth.instance;
+  final String cloudinaryUrl =
+      "https://api.cloudinary.com/v1_1/doiq3nkso/image/upload";
+  final String uploadPreset = "parking";
+  File? _selectedImage;
+  Uint8List? _imageBytes;
   final ImagePicker _picker = ImagePicker();
-  File? _profileImage;
-  String cloudinaryUrl = 'YOUR_CLOUDINARY_UPLOAD_URL'; // Replace with Cloudinary Upload URL
-  String cloudinaryPreset = 'YOUR_UPLOAD_PRESET'; // Replace with your Cloudinary Upload Preset
 
-  Future<void> _pickProfileImage() async {
+  Future<void> _pickImage() async {
     try {
       final XFile? pickedFile =
           await _picker.pickImage(source: ImageSource.gallery);
+
       if (pickedFile != null) {
-        setState(() {
-          _profileImage = File(pickedFile.path);
-        });
-        await _uploadToCloudinaryAndSave();
+        if (kIsWeb) {
+          final Uint8List bytes = await pickedFile.readAsBytes();
+          setState(() {
+            _imageBytes = bytes;
+          });
+        } else {
+          setState(() {
+            _selectedImage = File(pickedFile.path);
+          });
+        }
+
+        // Upload image to Cloudinary after selection
+        await _uploadImageToCloudinary();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No image selected')),
+        );
       }
     } catch (e) {
-      print("Error picking profile image: $e");
+      print("Error selecting image: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error selecting image')),
+      );
     }
   }
 
-  Future<void> _uploadToCloudinaryAndSave() async {
-    if (_profileImage == null) return;
-
+  Future<void> _uploadImageToCloudinary() async {
     try {
-      // Upload image to Cloudinary
-      var request = http.MultipartRequest('POST', Uri.parse(cloudinaryUrl));
-      request.files.add(await http.MultipartFile.fromPath(
-        'file',
-        _profileImage!.path,
-      ));
-      request.fields['parking'] = cloudinaryPreset;
+      if (_selectedImage == null && _imageBytes == null) {
+        return;
+      }
 
-      var response = await request.send();
+      var request = http.MultipartRequest('POST', Uri.parse(cloudinaryUrl))
+        ..fields['upload_preset'] = uploadPreset;
+
+      if (_imageBytes != null) {
+        request.files.add(
+          http.MultipartFile.fromBytes('file', _imageBytes!,
+              filename: 'profile_image.jpg'),
+        );
+      } else if (_selectedImage != null) {
+        request.files.add(
+          await http.MultipartFile.fromPath('file', _selectedImage!.path),
+        );
+      }
+
+      final response = await request.send();
+
       if (response.statusCode == 200) {
         final responseData = await http.Response.fromStream(response);
-        final data = json.decode(responseData.body);
-
+        final data = jsonDecode(responseData.body);
         final imageUrl = data['secure_url'];
-        print("Uploaded Image URL: $imageUrl");
 
-        // Save the URL to Firestore
+        // Update Firestore with the new image URL
         await FirebaseFirestore.instance
             .collection('users')
             .doc(auth.currentUser?.uid)
             .update({'profileImage': imageUrl});
 
-        setState(() {
-          _profileImage = null; // Clear the local image after upload
-        });
-
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Profile updated successfully!')),
+          const SnackBar(content: Text('Profile image updated successfully!')),
         );
       } else {
-        print("Error uploading to Cloudinary: ${response.statusCode}");
+        print("Upload failed with status: ${response.statusCode}");
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to upload image')),
+        );
       }
     } catch (e) {
       print("Error uploading image: $e");
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to upload image')),
+        const SnackBar(content: Text('Error uploading image')),
       );
     }
   }
@@ -147,58 +173,50 @@ class _drawer_menuState extends State<drawer_menu> {
               ),
             ),
             currentAccountPicture: GestureDetector(
-              onTap: _pickProfileImage,
+              onTap: _pickImage,
               child: CircleAvatar(
                 backgroundColor: Colors.white,
+                radius: 45,
                 child: ClipOval(
-                  child: _profileImage != null
-                      ? Image.file(
-                          _profileImage!,
+                  child: FutureBuilder<DocumentSnapshot>(
+                    future: FirebaseFirestore.instance
+                        .collection('users')
+                        .doc(auth.currentUser?.uid)
+                        .get(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const CircularProgressIndicator();
+                      }
+                      if (snapshot.hasError ||
+                          !snapshot.hasData ||
+                          !snapshot.data!.exists) {
+                        return Image.asset(
+                          'images/profile-user.png',
                           fit: BoxFit.cover,
                           width: 90,
                           height: 90,
-                        )
-                      : FutureBuilder<DocumentSnapshot>(
-                          future: FirebaseFirestore.instance
-                              .collection('users')
-                              .doc(auth.currentUser?.uid)
-                              .get(),
-                          builder: (context, snapshot) {
-                            if (snapshot.connectionState ==
-                                ConnectionState.waiting) {
-                              return const CircularProgressIndicator();
-                            }
-                            if (snapshot.hasError ||
-                                !snapshot.hasData ||
-                                !snapshot.data!.exists) {
-                              return Image.asset(
-                                'images/profile-user.png',
-                                fit: BoxFit.cover,
-                                width: 90,
-                                height: 90,
-                              );
-                            }
+                        );
+                      }
 
-                            final data =
-                                snapshot.data!.data() as Map<String, dynamic>;
-                            final profileImage =
-                                data['profileImage'] ?? 'images/profile-user.png';
+                      final data = snapshot.data!.data() as Map<String, dynamic>;
+                      final profileImage =
+                          data['profileImage'] ?? 'images/profile-user.png';
 
-                            return Image.network(
-                              profileImage,
-                              fit: BoxFit.cover,
-                              width: 90,
-                              height: 90,
-                              errorBuilder: (context, error, stackTrace) =>
-                                  Image.asset(
-                                'images/profile-user.png',
-                                fit: BoxFit.cover,
-                                width: 90,
-                                height: 90,
-                              ),
-                            );
-                          },
+                      return Image.network(
+                        profileImage,
+                        fit: BoxFit.cover,
+                        width: 90,
+                        height: 90,
+                        errorBuilder: (context, error, stackTrace) =>
+                            Image.asset(
+                          'images/profile-user.png',
+                          fit: BoxFit.cover,
+                          width: 90,
+                          height: 90,
                         ),
+                      );
+                    },
+                  ),
                 ),
               ),
             ),

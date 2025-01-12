@@ -1,25 +1,49 @@
+import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:parking/cash/receip.dart';
 
 class PayPage extends StatefulWidget {
-  const PayPage({super.key, required int packageHours});
+  final int packageHours;
+
+  const PayPage({super.key, required this.packageHours});
 
   @override
   State<PayPage> createState() => _PayPageState();
 }
 
 class _PayPageState extends State<PayPage> {
-  File? _pickedImage;
+  File? _selectedImage;
+  Uint8List? _imageBytes; // For web image bytes
   final ImagePicker _picker = ImagePicker();
 
+  // Function to pick an image from the gallery
   Future<void> _pickImage() async {
-    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
-    if (image != null) {
-      setState(() {
-        _pickedImage = File(image.path);
-      });
+    try {
+      final XFile? pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+      if (pickedFile != null) {
+        if (kIsWeb) {
+          final Uint8List bytes = await pickedFile.readAsBytes();
+          setState(() {
+            _imageBytes = bytes;
+          });
+        } else {
+          setState(() {
+            _selectedImage = File(pickedFile.path);
+          });
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No image selected')),
+        );
+      }
+    } catch (e) {
+      print("Error selecting image: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error selecting image')),
+      );
     }
   }
 
@@ -45,9 +69,9 @@ class _PayPageState extends State<PayPage> {
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
-              "25,000 KIP",
-              style: TextStyle(
+            Text(
+              "${widget.packageHours * 15000} KIP", // Example calculation
+              style: const TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
                 color: Colors.blue,
@@ -81,7 +105,7 @@ class _PayPageState extends State<PayPage> {
                   child: TextField(
                     decoration: InputDecoration(
                       labelText: "MM/YY",
-                      hintText: "Time",
+                      hintText: "Expiry Date",
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
@@ -135,20 +159,28 @@ class _PayPageState extends State<PayPage> {
                   border: Border.all(color: Colors.grey),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: _pickedImage != null
+                child: _selectedImage != null
                     ? ClipRRect(
                         borderRadius: BorderRadius.circular(10),
                         child: Image.file(
-                          _pickedImage!,
+                          _selectedImage!,
                           fit: BoxFit.cover,
                         ),
                       )
-                    : const Center(
-                        child: Text(
-                          "Tap to upload",
-                          style: TextStyle(color: Colors.grey),
-                        ),
-                      ),
+                    : _imageBytes != null
+                        ? ClipRRect(
+                            borderRadius: BorderRadius.circular(10),
+                            child: Image.memory(
+                              _imageBytes!,
+                              fit: BoxFit.cover,
+                            ),
+                          )
+                        : const Center(
+                            child: Text(
+                              "Tap to upload",
+                              style: TextStyle(color: Colors.grey),
+                            ),
+                          ),
               ),
             ),
             const SizedBox(height: 40),
@@ -157,6 +189,14 @@ class _PayPageState extends State<PayPage> {
             Center(
               child: ElevatedButton(
                 onPressed: () {
+                  if (_selectedImage == null && _imageBytes == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text("Please upload an image before proceeding."),
+                      ),
+                    );
+                    return;
+                  }
                   Navigator.of(context).push(
                     MaterialPageRoute(builder: (c) => const BillPage()),
                   );

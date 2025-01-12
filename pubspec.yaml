@@ -78,7 +78,8 @@ flutter_native_splash:
 flutter_launcher_icons:
   android: "launcher_icon"
   ios: true
-  image_path: "assets/images/p_logo.jpg"
+  image_path_android: "assets/images/p_logo.jpg"
+  image_path_ios: "assets/images/p_logo.jpg"
 
 dev_dependencies:
   flutter_test:

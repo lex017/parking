@@ -27,15 +27,14 @@ class _LoginPageState extends State<loginPage> {
     loadCredentials(); // Load saved credentials during initialization
   }
 
-  Future<void> loadCredentials() async {
+   Future<void> loadCredentials() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
-      myUser.email = prefs.getString('email') ?? ''; // Load saved email
-      myUser.Pass = prefs.getString('password') ?? ''; // Load saved password
-      rememberMe = prefs.getBool('rememberMe') ?? false; // Load "Remember Me" state
+      myUser.email = prefs.getString('email') ?? '';
+      myUser.Pass = prefs.getString('password') ?? '';
+      rememberMe = prefs.getBool('rememberMe') ?? false;
     });
 
-    // Auto-login if "Remember Me" is enabled
     if (rememberMe && myUser.email.isNotEmpty && myUser.Pass.isNotEmpty) {
       try {
         await FirebaseAuth.instance.signInWithEmailAndPassword(
@@ -46,7 +45,7 @@ class _LoginPageState extends State<loginPage> {
           MaterialPageRoute(builder: (c) => Homepage()),
         );
       } catch (e) {
-        print("Auto-login failed: $e");
+        debugPrint("Auto-login failed: $e");
       }
     }
   }
@@ -54,13 +53,13 @@ class _LoginPageState extends State<loginPage> {
   Future<void> saveCredentials() async {
     final prefs = await SharedPreferences.getInstance();
     if (rememberMe) {
-      await prefs.setString('email', myUser.email); // Save email
-      await prefs.setString('password', myUser.Pass); // Save password
-      await prefs.setBool('rememberMe', true); // Save "Remember Me" state
+      await prefs.setString('email', myUser.email);
+      await prefs.setString('password', myUser.Pass);
+      await prefs.setBool('rememberMe', true);
     } else {
-      await prefs.remove('email'); // Clear saved email
-      await prefs.remove('password'); // Clear saved password
-      await prefs.remove('rememberMe'); // Clear "Remember Me" state
+      await prefs.remove('email');
+      await prefs.remove('password');
+      await prefs.remove('rememberMe');
     }
   }
 

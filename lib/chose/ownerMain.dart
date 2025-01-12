@@ -7,6 +7,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:parking/data_save/btnadd_parking.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:http/http.dart' as http;
 
@@ -594,7 +595,12 @@ Future<void> _addLocationWithCustomId(String name, String address, String url,
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.white,
-        onPressed: _showAddLocationDialog,
+        onPressed: (){
+          Navigator.of(context).pop();
+                MaterialPageRoute route =
+                    MaterialPageRoute(builder: (c) => BtnaddParking());
+                Navigator.of(context).push(route);
+        },
         child: const Icon(
           Icons.add,
           size: 35,

@@ -217,7 +217,7 @@ class _BtnLocationState extends State<btnLocation> {
                             style: TextStyle(fontSize: 16, color: Colors.grey),
                           ),
                           Text(
-                            "${selectedHours != null ? selectedHours! * 15000 : 0} LAK",
+                            "${selectedHours != null ? selectedHours! * 5000 : 0} LAK",
                             style: const TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.bold,

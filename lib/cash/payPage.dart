@@ -22,7 +22,8 @@ class _PayPageState extends State<PayPage> {
   // Function to pick an image from the gallery
   Future<void> _pickImage() async {
     try {
-      final XFile? pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+      final XFile? pickedFile =
+          await _picker.pickImage(source: ImageSource.gallery);
       if (pickedFile != null) {
         if (kIsWeb) {
           final Uint8List bytes = await pickedFile.readAsBytes();
@@ -70,7 +71,7 @@ class _PayPageState extends State<PayPage> {
             ),
             const SizedBox(height: 8),
             Text(
-              "${widget.packageHours * 15000} KIP", // Example calculation
+              "${widget.packageHours * 5000} KIP", // Calculate total based on packageHours
               style: const TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
@@ -114,18 +115,6 @@ class _PayPageState extends State<PayPage> {
                   ),
                 ),
                 const SizedBox(width: 10),
-                // CVV
-                Expanded(
-                  child: TextField(
-                    decoration: InputDecoration(
-                      labelText: "CVV",
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    keyboardType: TextInputType.number,
-                  ),
-                ),
               ],
             ),
             const SizedBox(height: 20),
@@ -202,7 +191,8 @@ class _PayPageState extends State<PayPage> {
                   );
                 },
                 style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),

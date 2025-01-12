@@ -36,7 +36,8 @@ class _QrPayState extends State<QrPay> {
       const String cloudinaryUrl =
           'https://res.cloudinary.com/doiq3nkso/image/upload/v1736478510/zgpbt7fp1w9d9tua7ujp.jpg'; // URL ของ QR
       setState(() {
-        imageUrl = cloudinaryUrl; // ตั้งค่า URL ตรงนี้ (สมมติว่า URL ใช้งานได้โดยตรง)
+        imageUrl =
+            cloudinaryUrl; // ตั้งค่า URL ตรงนี้ (สมมติว่า URL ใช้งานได้โดยตรง)
         isLoading = false;
       });
     } catch (e) {
@@ -120,20 +121,18 @@ class _QrPayState extends State<QrPay> {
                 : () {
                     _timer.cancel(); // Cancel the timer before navigating
                     Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (c) => PayPage(
-                                        packageHours:
-                                            selectedHours!), // Pass selectedHours
-                                  ),
-                                );
+                      MaterialPageRoute(
+                        builder: (c) => PayPage(
+                            packageHours: selectedHours!), // Pass selectedHours
+                      ),
+                    );
                   },
             style: ElevatedButton.styleFrom(
               backgroundColor:
                   selectedHours == null ? Colors.grey : Colors.blue,
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              textStyle: const TextStyle(
-                  fontSize: 18, fontWeight: FontWeight.bold),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              textStyle:
+                  const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             child: const Text("Pay Now"),
           ),

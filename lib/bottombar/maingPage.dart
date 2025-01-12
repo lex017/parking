@@ -23,7 +23,7 @@ class _MainPageState extends State<mainPage> {
                            'https://res.cloudinary.com/doiq3nkso/image/upload/v1736348080/sivz7kpn9yhcajh6r0mb.jpg',
                            'https://res.cloudinary.com/doiq3nkso/image/upload/v1736348049/ojs7n8aufknyoerqfxex.jpg',
                            'https://res.cloudinary.com/doiq3nkso/image/upload/v1736348850/jwufyzc7imcwz3ylpi5d.png'
-                           ]; // To store Cloudinary image URLs.
+                          ]; 
 
   @override
   void initState() {

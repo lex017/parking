@@ -20,6 +20,7 @@ class _BtnLocationState extends State<btnLocation> {
     return Scaffold(
       body: Column(
         children: [
+          // StreamBuilder to fetch image
           StreamBuilder<DocumentSnapshot>(
             stream: FirebaseFirestore.instance
                 .collection('Locations')
@@ -62,20 +63,26 @@ class _BtnLocationState extends State<btnLocation> {
 
               return Stack(
                 children: [
-                  AspectRatio(
-                    aspectRatio: 16 / 9,
-                    child: imageUrl.isNotEmpty
-                        ? Image.network(
-                            imageUrl,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) =>
-                                const Center(
-                              child: Text("Failed to load image"),
+                  Container(
+                    width: double.infinity,
+                    height: 250,
+                    decoration: BoxDecoration(
+                      image: imageUrl.isNotEmpty
+                          ? DecorationImage(
+                              image: NetworkImage(imageUrl),
+                              fit: BoxFit.cover,
+                            )
+                          : null,
+                      color: Colors.grey.shade200,
+                    ),
+                    child: imageUrl.isEmpty
+                        ? const Center(
+                            child: Text(
+                              "No image available",
+                              style: TextStyle(color: Colors.grey),
                             ),
                           )
-                        : const Center(
-                            child: Text("No image available"),
-                          ),
+                        : null,
                   ),
                   Positioned(
                     top: 40,
@@ -85,9 +92,9 @@ class _BtnLocationState extends State<btnLocation> {
                           color: Colors.white, size: 30),
                       onPressed: () {
                         Navigator.of(context).pop();
-                        MaterialPageRoute route =
-                            MaterialPageRoute(builder: (c) => LocationPage());
-                        Navigator.of(context).push(route);
+                        Navigator.of(context).push(
+                          MaterialPageRoute(builder: (c) => LocationPage()),
+                        );
                       },
                     ),
                   ),
@@ -95,7 +102,8 @@ class _BtnLocationState extends State<btnLocation> {
               );
             },
           ),
-          const SizedBox(height: 20.0),
+
+          // Information section
           Expanded(
             child: Container(
               padding: const EdgeInsets.all(20),
@@ -117,6 +125,7 @@ class _BtnLocationState extends State<btnLocation> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // StreamBuilder to fetch location details
                   StreamBuilder<DocumentSnapshot>(
                     stream: FirebaseFirestore.instance
                         .collection('Locations')
@@ -126,12 +135,14 @@ class _BtnLocationState extends State<btnLocation> {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return const CircularProgressIndicator();
                       }
+
                       if (snapshot.hasError) {
                         return const Text(
                           "Error loading data",
                           style: TextStyle(color: Colors.red),
                         );
                       }
+
                       if (!snapshot.hasData || !snapshot.data!.exists) {
                         return const Text(
                           "No data available",
@@ -169,7 +180,10 @@ class _BtnLocationState extends State<btnLocation> {
                       );
                     },
                   ),
+
                   const SizedBox(height: 20),
+
+                  // Dropdown to select hours
                   Row(
                     children: [
                       const Text(
@@ -205,7 +219,10 @@ class _BtnLocationState extends State<btnLocation> {
                       ),
                     ],
                   ),
+
                   const Spacer(),
+
+                  // Price and Navigate button
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -230,10 +247,11 @@ class _BtnLocationState extends State<btnLocation> {
                         onPressed: selectedHours == null
                             ? null
                             : () {
-                                Navigator.of(context).pop();
-                                MaterialPageRoute route =
-                                    MaterialPageRoute(builder: (c) => QrPay());
-                                Navigator.of(context).push(route);
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (c) => QrPay(),
+                                  ),
+                                );
                               },
                         icon: const Icon(Icons.arrow_forward,
                             color: Colors.white),

@@ -13,6 +13,7 @@ import 'package:parking/constant/CloudinaryUploader.dart';
 import 'package:parking/homepage.dart';
 import 'package:parking/loginandregis/loginPage.dart';
 import 'package:parking/map_api/LocationPage.dart';
+import 'package:parking/map_api/map_api.dart';
 import 'package:parking/menu/Help.dart';
 import 'package:parking/menu/Wallet.dart';
 import 'package:parking/menu/employeescan.dart';
@@ -419,7 +420,7 @@ class _DrawerMenuState extends State<drawer_menu> {
             onPressed: () {},
             child: ListTile(
               title: Text(
-                'Logout',
+                'GPS',
                 style: TextStyle(
                   fontSize: 22.0,
                   fontWeight: FontWeight.bold,
@@ -430,8 +431,25 @@ class _DrawerMenuState extends State<drawer_menu> {
               onTap: () {
                 Navigator.of(context).pop();
                 MaterialPageRoute route =
-                    MaterialPageRoute(builder: (c) => loginPage());
+                    MaterialPageRoute(builder: (c) => map_api());
                 Navigator.of(context).push(route);
+              },
+            ),
+          ),
+          TextButton(
+            onPressed: () {},
+            child: ListTile(
+              title: Text(
+                'Logout',
+                style: TextStyle(
+                  fontSize: 22.0,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                  fontFamily: 'Roboto',
+                ),
+              ),
+              onTap: () {
+                Navigator.of(context).pop();
               },
             ),
           ),

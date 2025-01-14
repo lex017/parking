@@ -15,92 +15,122 @@ class btnLocation extends StatefulWidget {
 class _BtnLocationState extends State<btnLocation> {
   int? selectedHours;
 
+  void _showImagePopup(String imageUrl) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: GestureDetector(
+          onTap: () => Navigator.pop(context),
+          child: Center(
+            child: Image.network(
+              imageUrl,
+              fit: BoxFit.contain,
+              errorBuilder: (context, error, stackTrace) => const Text(
+                "Failed to load image",
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Column(
         children: [
-          // StreamBuilder to fetch image
-          StreamBuilder<DocumentSnapshot>(
-            stream: FirebaseFirestore.instance
-                .collection('Locations')
-                .doc(widget.documentId)
-                .snapshots(),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const SizedBox(
-                  height: 250,
-                  child: Center(child: CircularProgressIndicator()),
-                );
-              }
+          Stack(
+            children: [
+              // StreamBuilder to fetch image
+              StreamBuilder<DocumentSnapshot>(
+                stream: FirebaseFirestore.instance
+                    .collection('Locations')
+                    .doc(widget.documentId)
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const SizedBox(
+                      height: 300,
+                      child: Center(child: CircularProgressIndicator()),
+                    );
+                  }
 
-              if (snapshot.hasError) {
-                return const SizedBox(
-                  height: 250,
-                  child: Center(
-                    child: Text(
-                      "Error loading image",
-                      style: TextStyle(color: Colors.red),
-                    ),
-                  ),
-                );
-              }
+                  if (snapshot.hasError) {
+                    return const SizedBox(
+                      height: 300,
+                      child: Center(
+                        child: Text(
+                          "Error loading image",
+                          style: TextStyle(color: Colors.red),
+                        ),
+                      ),
+                    );
+                  }
 
-              if (!snapshot.hasData || !snapshot.data!.exists) {
-                return const SizedBox(
-                  height: 250,
-                  child: Center(
-                    child: Text(
-                      "No image available",
-                      style: TextStyle(color: Colors.grey),
-                    ),
-                  ),
-                );
-              }
+                  if (!snapshot.hasData || !snapshot.data!.exists) {
+                    return const SizedBox(
+                      height: 300,
+                      child: Center(
+                        child: Text(
+                          "No image available",
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                      ),
+                    );
+                  }
 
-              final data = snapshot.data!.data() as Map<String, dynamic>;
-              final imageUrl = data['imageUrl'] ?? '';
+                  final data = snapshot.data!.data() as Map<String, dynamic>;
+                  final imageUrl = data['imageUrl'] ?? '';
 
-              return Stack(
-                children: [
-                  Container(
-                    width: double.infinity,
-                    height: 250,
-                    decoration: BoxDecoration(
-                      image: imageUrl.isNotEmpty
-                          ? DecorationImage(
-                              image: NetworkImage(imageUrl),
-                              fit: BoxFit.cover,
+                  return GestureDetector(
+                    onTap: () {
+                      if (imageUrl.isNotEmpty) {
+                        _showImagePopup(imageUrl);
+                      }
+                    },
+                    child: Container(
+                      width: double.infinity,
+                      height: 300, // Full height for the image
+                      decoration: BoxDecoration(
+                        borderRadius: const BorderRadius.only(
+                          bottomLeft: Radius.circular(40),
+                          bottomRight: Radius.circular(40),
+                        ),
+                        image: imageUrl.isNotEmpty
+                            ? DecorationImage(
+                                image: NetworkImage(imageUrl),
+                                fit: BoxFit.cover,
+                              )
+                            : null,
+                        color: Colors.grey.shade200,
+                      ),
+                      child: imageUrl.isEmpty
+                          ? const Center(
+                              child: Text(
+                                "No image available",
+                                style: TextStyle(color: Colors.grey),
+                              ),
                             )
                           : null,
-                      color: Colors.grey.shade200,
                     ),
-                    child: imageUrl.isEmpty
-                        ? const Center(
-                            child: Text(
-                              "No image available",
-                              style: TextStyle(color: Colors.grey),
-                            ),
-                          )
-                        : null,
-                  ),
-                  Positioned(
-                    top: 40,
-                    left: 20,
-                    child: IconButton(
-                      icon: const Icon(Icons.arrow_back,
-                          color: Colors.white, size: 30),
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                        Navigator.of(context).push(
-                          MaterialPageRoute(builder: (c) => LocationPage()),
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              );
-            },
+                  );
+                },
+              ),
+              // Back Button
+              Positioned(
+                top: 40,
+                left: 16,
+                child: IconButton(
+                  icon: const Icon(Icons.arrow_back, color: Colors.white, size: 30),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ),
+            ],
           ),
 
           // Information section

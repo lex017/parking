@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:parking/chose/ownerMain.dart';
 
 class BtnaddParking extends StatefulWidget {
   const BtnaddParking({super.key});
@@ -15,7 +16,8 @@ class BtnaddParking extends StatefulWidget {
 }
 
 class _BtnaddParkingState extends State<BtnaddParking> {
-  final String cloudinaryUrl = "https://api.cloudinary.com/v1_1/doiq3nkso/image/upload";
+  final String cloudinaryUrl =
+      "https://api.cloudinary.com/v1_1/doiq3nkso/image/upload";
   final String uploadPreset = "parking";
   File? _selectedImage;
   Uint8List? _imageBytes;
@@ -23,7 +25,8 @@ class _BtnaddParkingState extends State<BtnaddParking> {
 
   Future<void> _pickImage() async {
     try {
-      final XFile? pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+      final XFile? pickedFile =
+          await _picker.pickImage(source: ImageSource.gallery);
       if (pickedFile != null) {
         if (kIsWeb) {
           final Uint8List bytes = await pickedFile.readAsBytes();
@@ -55,7 +58,8 @@ class _BtnaddParkingState extends State<BtnaddParking> {
 
       if (_imageBytes != null) {
         request.files.add(
-          http.MultipartFile.fromBytes('file', _imageBytes!, filename: 'image.jpg'),
+          http.MultipartFile.fromBytes('file', _imageBytes!,
+              filename: 'image.jpg'),
         );
       } else if (_selectedImage != null) {
         request.files.add(
@@ -81,7 +85,8 @@ class _BtnaddParkingState extends State<BtnaddParking> {
     }
   }
 
-  Future<void> _addLocationWithImage(String name, String address, String url, String description, int carSlot) async {
+  Future<void> _addLocationWithImage(String name, String address, String url,
+      String description, int carSlot) async {
     try {
       final String? imageUrl = await _uploadImageToCloudinary();
 
@@ -100,8 +105,15 @@ class _BtnaddParkingState extends State<BtnaddParking> {
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Location added successfully with ID: $newId')),
+          SnackBar(
+              content: Text('Location added successfully with ID: $newId')),
         );
+
+        // Navigate back to the previous screen
+        Navigator.of(context).pop();
+        MaterialPageRoute route =
+        MaterialPageRoute(builder: (c) => ownerMain());
+        Navigator.of(context).push(route);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Image upload failed')),
@@ -233,9 +245,11 @@ class _BtnaddParkingState extends State<BtnaddParking> {
                         final address = _addressController.text.trim();
                         final url = _urlController.text.trim();
                         final description = _descriptionController.text.trim();
-                        final carSlot = int.parse(_carSlotController.text.trim());
+                        final carSlot =
+                            int.parse(_carSlotController.text.trim());
 
-                        await _addLocationWithImage(name, address, url, description, carSlot);
+                        await _addLocationWithImage(
+                            name, address, url, description, carSlot);
                       }
                     },
                     child: const Text("Add Location"),
